@@ -1,0 +1,80 @@
+body {
+  /* Scales beautifully if the user changes their browser settings */
+  font-size: 1.125rem; 
+  line-height: 1.6; /* Don't forget line-height for readability! */
+}
+
+h2 {
+  padding-top: 1em;
+  line-height: 1.2;
+}
+
+p {
+  text-align: justify;
+}
+
+.colu {
+  padding-left: 12px;
+  padding-right: 12px;
+  margin: 40px auto;
+  max-width: 624px;
+}
+
+.vidcolu {
+  padding-left: 12px;
+  padding-right: 12px;
+  margin: 40px auto;
+  max-width: 900px;
+}
+
+video, img {
+  width: 100%;
+  object-fit: cover;
+}
+
+.shadow {
+  background: #eaeaea;
+  box-shadow: 0px 0px 20px black;
+  padding: 1em;
+}
+
+.shadow .colu {
+  margin: 1em auto;
+}
+
+.shadow h2 {
+  padding-top: 0px;
+}
+
+.viddesc {
+  text-align: center;
+  margin-top: 0px;
+}
+
+pre {
+  font-size: 14px;
+  padding: 1em;
+  color: black;
+  background: #ccc;
+  text-wrap: auto;
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 1.2s;
+}
+
+footer {
+  padding: 1px;
+  background: #eaeaea;
+  box-shadow: 0px 0px 20px black;
+}
+
+.foot {
+  text-align: center;
+  font-size: 14px;
+}

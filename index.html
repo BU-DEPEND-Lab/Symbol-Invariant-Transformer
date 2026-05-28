@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A Transformer mechanism provably invariant to the renaming of interchangeable tokens, enabling open-vocabulary generalization to novel symbols.">
+    <title>Names Don't Matter: Symbol-Invariant Transformer for Open-Vocabulary Learning</title>
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        .container.is-max-desktop {
+            max-width: 75% !important;
+            margin: 0 auto;
+        }
+        @media screen and (min-width: 1408px) {
+            .container.is-max-desktop {
+                max-width: 1100px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<section class="hero">
+    <div class="hero-body">
+        <div class="container is-max-desktop">
+            <div class="columns is-centered">
+                <div class="column has-text-centered">
+                    <h1 class="title is-1 fade-in">Names Don't Matter: Symbol-Invariant Transformer for Open-Vocabulary Learning</h1>
+                    <div class="has-text-centered" style="font-size: 1.8rem; color: black; margin-bottom: 0.75em;">
+                        <b>ICML 2026</b>
+                    </div>
+                    <div class="is-size-4" style="margin-bottom: 0.5em;">
+                        <span><a href="https://scholar.google.com/citations?user=4Q07NXsAAAAJ&hl=en">İlker Işık</a></span>,
+                        <span><a href="https://www.bu.edu/eng/profile/wenchao-li-ph-d/">Wenchao Li</a></span>
+                    </div>
+                    <div class="is-size-5" style="margin-bottom: 0.5em;">
+                        Department of Electrical and Computer Engineering, Boston University
+                    </div>
+                    <div class="has-text-centered" style="margin-bottom: 1.5em;">
+                        <a href="https://sites.bu.edu/depend/" target="_blank" style="color: #3273dc; text-decoration: none;">
+                            <strong>Dependable Computing Lab @ Boston University</strong>
+                        </a>
+                    </div>
+                    <div class="buttons is-centered">
+                        <a href="https://arxiv.org/pdf/2601.23169" class="button is-normal is-rounded is-dark">
+                            <span class="icon">
+                                <svg width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z"/></svg>
+                            </span>
+                            <span>Paper</span>
+                        </a>
+                        <a href="https://github.com/BU-DEPEND-Lab/Symbol-Invariant-Transformer" class="button is-normal is-rounded is-dark">
+                            <span class="icon">
+                                <svg width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8z"/></svg>
+                            </span>
+                            <span>Code</span>
+                        </a>
+                        <a href="https://arxiv.org/abs/2601.23169" class="button is-normal is-rounded is-dark">
+                            <span class="icon">
+                                <svg width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17.732 24.269"><path d="M573.549,280.916l2.266,2.738,6.674-7.84c.353-.47.52-.717.353-1.117a1.218,1.218,0,0,0-1.061-.748h0a.953.953,0,0,0-.712.262Z" transform="translate(-566.984 -271.548)" fill="#bdb9b4"/><path d="M579.525,282.225l-10.606-10.174a1.413,1.413,0,0,0-.834-.5,1.09,1.09,0,0,0-1.027.66c-.167.4-.047.681.319,1.206l8.44,10.242h0l-6.282,7.716a1.336,1.336,0,0,0-.323,1.3,1.114,1.114,0,0,0,1.04.69A.992.992,0,0,0,571,293l8.519-7.92A1.924,1.924,0,0,0,579.525,282.225Z" transform="translate(-566.984 -271.548)" fill="#b31b1b"/><path d="M584.32,293.912l-8.525-10.275,0,0L573.53,280.9l-1.389,1.254a2.063,2.063,0,0,0,0,2.965l10.812,10.419a.925.925,0,0,0,.742.282,1.039,1.039,0,0,0,.953-.667A1.261,1.261,0,0,0,584.32,293.912Z" transform="translate(-566.984 -271.548)" fill="#bdb9b4"/></svg>
+                            </span>
+                            <span>arXiv</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="shadow">
+    <div class="colu">
+        <h2 class="title is-3">Abstract</h2>
+        <p>
+            Current neural architectures lack a principled way to handle interchangeable tokens, i.e., symbols that are
+            semantically equivalent yet distinguishable, such as bound variables. As a result, models trained on fixed
+            vocabularies often struggle to generalize to unseen symbols, even when the underlying semantics remain
+            unchanged. We propose a novel Transformer-based mechanism that is provably invariant to the renaming of
+            interchangeable tokens. Our approach employs parallel embedding streams to isolate the contribution of each
+            interchangeable token in the input, combined with an aggregated attention mechanism that enables structured
+            information sharing across streams. Experimental results confirm the theoretical guarantees of our method
+            and demonstrate substantial performance gains on open-vocabulary tasks that require generalization to novel
+            symbols.
+        </p>
+    </div>
+</div>
+
+<div class="vidcolu">
+    <h2 class="title is-3">Alpha-Equivalence</h2>
+    <!-- TODO: replace with video source -->
+    <video controls autoplay loop>
+        <source src="./static/media/alphaeq.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <p class="viddesc">
+        In many formal languages, variables can be renamed without changing the meaning — a property known as
+        <i>alpha-equivalence</i>. Our method is <b>provably invariant</b> to such renamings, enabling generalization
+        to larger symbol vocabularies at test time without any retraining.
+    </p>
+</div>
+
+<footer>
+    <div class="vidcolu">
+        <h2 class="title is-3">BibTeX</h2>
+        <div class="field">
+            <div class="control">
+                <textarea id="bibtex-text" class="textarea" readonly style="font-family: monospace; font-size: 0.9em; background-color: #f5f5f5; border: 1px solid #ddd; resize: vertical; min-height: 14em;">@inproceedings{Isik2026NamesDoNotMatter,
+  author    = {\.{I}lker I\c{s}{\i}k and Wenchao Li},
+  title     = {Names Don't Matter: Symbol-Invariant Transformer for Open-Vocabulary Learning},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  year      = {2026},
+  month     = {July},
+  url       = {https://arxiv.org/abs/2601.23169},
+}</textarea>
+            </div>
+            <div class="control" style="margin-top: 10px;">
+                <button class="button is-small is-primary" onclick="copyBibTeX();">
+                    <span class="icon is-small">
+                        <svg width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z"/></svg>
+                    </span>
+                    <span id="copy-btn-text">Copy to Clipboard</span>
+                </button>
+            </div>
+        </div>
+        <script>
+        function copyBibTeX() {
+            const textarea = document.getElementById('bibtex-text');
+            const copyBtn = document.getElementById('copy-btn-text');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(textarea.value).then(function() {
+                const original = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => { copyBtn.textContent = original; }, 2000);
+            }).catch(function() {
+                const textArea = document.createElement('textarea');
+                textArea.value = textarea.value;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    if (document.execCommand('copy')) {
+                        const original = copyBtn.textContent;
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => { copyBtn.textContent = original; }, 2000);
+                    }
+                } catch (e) {}
+                document.body.removeChild(textArea);
+            });
+        }
+        </script>
+    </div>
+    <div class="colu">
+        <p class="foot">
+            Copyright &copy; 2026 İlker Işık
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>
