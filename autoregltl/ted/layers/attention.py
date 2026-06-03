@@ -19,7 +19,7 @@ def apply_rotary_pos_emb(q, cos, sin):
     Returns:
         `tuple(torch.Tensor)` comprising of the query and key tensors rotated using the Rotary Position Embedding.
     """
-    return (q * cos.unsqueeze(1)) + (rotate_half(q) * sin.unsqueeze(1))
+    return (q * cos.unsqueeze(0).unsqueeze(0)) + (rotate_half(q) * sin.unsqueeze(0).unsqueeze(0))
 
 
 def scaled_dot_product_attention(queries, keys, values, mask=None):
@@ -72,24 +72,24 @@ class MultiHeadAttention(nn.Module):
         else:
             self.rope = None
 
-    def _split_heads(self, input, batch_size):
+    def _split_heads(self, input, batch_size, ap_count):
         """
         Splits last dimension d_embedding into (num_heads, d_heads) and transposes result
         Args:
-            input: (batch_size, num_inputs, d_embedding)
+            input: (batch_size, ap_count, num_inputs, d_embedding)
         Returns:
-            (batch_size, num_heads, num_inputs, d_heads)
+            (batch_size, ap_count, num_heads, num_inputs, d_heads)
         """
-        input = input.view(batch_size, -1, self.num_heads, self.d_heads)
-        return input.transpose(1, 2)
+        input = input.view(batch_size, ap_count, -1, self.num_heads, self.d_heads)
+        return input.transpose(2, 3)
 
     def forward(self, queries, keys, values, mask=None, cache=None, past_queries=0, no_pe_keys: bool = False):
         """
         Args:
-            queries: (batch_size, num_queries, d_embedding)
-            keys: (batch_size, num_keys, d_embedding)
-            values: (batch_size, num_keys, d_embedding)
-            mask: (batch_size, num_queries, num_keys)
+            queries: (batch_size, ap_count, num_queries, d_embedding)
+            keys: (batch_size, ap_count, num_keys, d_embedding)
+            values: (batch_size, ap_count, num_keys, d_embedding)
+            mask: (batch_size, ap_count, num_queries, num_keys)
             cache: a dictionary with attention from previous decoding steps that is used for fast decoding and has the following form:
                 {'keys': [batch_size, i, num_heads, d_heads]
                  'values': [batch_size, i, num_heads, d_heads]}
@@ -97,32 +97,34 @@ class MultiHeadAttention(nn.Module):
             past_queries: the number of previous decoding steps
             no_pe_keys: if True, no rotary positional encoding is applied to the keys
         Returns:
-            attention: (batch_size, num_queries, d_embedding)
-            attention_weights: (batch_size, num_queries, num_keys)
+            attention: (batch_size, ap_count, num_queries, d_embedding)
+            attention_weights: (batch_size, ap_count, num_queries, num_keys)
         """
         batch_size = queries.size(0)
+        query_ap_count = queries.size(1)  # number of atomic propositions
+        key_ap_count = keys.size(1)
 
         queries = self.Q(queries)
         keys = self.K(keys)
         values = self.V(values)
 
-        queries = self._split_heads(queries, batch_size)  # (batch_size, num_heads, num_queries, d_heads)
-        keys = self._split_heads(keys, batch_size)  # (batch_size, num_heads, num_keys, d_heads)
-        values = self._split_heads(values, batch_size)  # (batch_size, num_heads, num_keys, d_heads)
+        queries = self._split_heads(queries, batch_size, query_ap_count)  # (batch_size, ap_count, num_heads, num_queries, d_heads)
+        keys = self._split_heads(keys, batch_size, key_ap_count)  # (batch_size, ap_count, num_heads, num_keys, d_heads)
+        values = self._split_heads(values, batch_size, key_ap_count)  # (batch_size, ap_count, num_heads, num_keys, d_heads)
 
         if self.rope is not None:
             if not no_pe_keys:
                 # Apply rotary positional encoding to keys
                 # Note that cache is transposed compared to attention: (batch_size, seq_len, num_heads, d_heads)
-                prev_tokens = cache['keys'].size(1) if cache is not None else 0
-                sequence_length = keys.size(2)
+                prev_tokens = cache['keys'].size(3) if cache is not None else 0
+                sequence_length = keys.size(3)
                 positional_ids = torch.arange(prev_tokens, prev_tokens + sequence_length, dtype=torch.long, device=queries.device)
                 positional_ids = positional_ids.unsqueeze(0)
                 cos, sin = self.rope(keys, positional_ids)
                 keys = apply_rotary_pos_emb(keys, cos, sin)
 
             # Do the same for queries
-            sequence_length = queries.size(2)
+            sequence_length = queries.size(3)
             prev_tokens = past_queries
             positional_ids = torch.arange(prev_tokens, prev_tokens + sequence_length, dtype=torch.long, device=queries.device)
             positional_ids = positional_ids.unsqueeze(0)
@@ -131,14 +133,14 @@ class MultiHeadAttention(nn.Module):
 
         if cache is not None:
             # concatenate cached keys and values
-            keys = torch.cat([cache['keys'].transpose(1, 2), keys], dim=2)
-            values = torch.cat([cache['values'].transpose(1, 2), values], dim=2)
+            keys = torch.cat([cache['keys'], keys], dim=-2)
+            values = torch.cat([cache['values'], values], dim=-2)
             # update cache
-            cache['keys'] = keys.transpose(1, 2)
-            cache['values'] = values.transpose(1, 2)
+            cache['keys'] = keys
+            cache['values'] = values
 
-        scaled_attention, attention_weights = scaled_dot_product_attention(queries, keys, values, mask)  # (batch_size, num_heads, num_queries, d_heads) (batch_size, num_heads, num_queries, num_keys)
-        scaled_attention = scaled_attention.transpose(1, 2)  # (batch_size, num_queries, num_heads, d_heads)
-        concat_attention = scaled_attention.contiguous().view(batch_size, -1, self.d_embedding)  # (batch_size, num_queries, d_embedding)
-        attention = self.final_projection(concat_attention)  # (batch_size, num_queries, d_embedding)
+        scaled_attention, attention_weights = scaled_dot_product_attention(queries, keys, values, mask)  # (batch_size, ap_count, num_heads, num_queries, d_heads), (batch_size, ap_count, num_heads, num_queries, num_keys)
+        scaled_attention = scaled_attention.transpose(2, 3)  # (batch_size, ap_count, num_queries, num_heads, d_heads)
+        concat_attention = scaled_attention.contiguous().view(batch_size, query_ap_count, -1, self.d_embedding)  # (batch_size, ap_count, num_queries, d_embedding)
+        attention = self.final_projection(concat_attention)  # (batch_size, ap_count, num_queries, d_embedding)
         return attention, attention_weights

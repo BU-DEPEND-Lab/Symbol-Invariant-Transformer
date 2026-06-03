@@ -18,10 +18,6 @@ def add_training_arguments(parser):
 
     group = parser.add_argument_group("Training Arguments")
     group.add_argument("--val-split", type=str, default="val")
-    # Tokenizer
-    group.add_argument("--merged-vocab", action='store_true', default=False, help='Use common vocab for encoder and decoder')
-    group.add_argument("--merge-tokens", type=str)
-    group.add_argument("--dynamic-aps", action='store_true', default=False)
     # Train config
     group.add_argument("--learning-rate", type=float, default=1e-3)
     group.add_argument("--lr-scheduler-type", type=str, default="cosine")
@@ -34,6 +30,7 @@ def add_training_arguments(parser):
     # Batch size and steps
     group.add_argument("--epochs", type=int, default=60)
     group.add_argument("--batch-size", type=int, default=512)
+    group.add_argument("--eval-batch-size", type=int, default=512)
     group.add_argument("--grad-acc-steps", type=int, default=1)
     group.add_argument("--logging-steps", type=int, default=500)
     group.add_argument("--eval-steps", type=int, default=3000, help="Eval and save every X steps (default: 3000)")
@@ -44,6 +41,7 @@ def add_training_arguments(parser):
     group.add_argument('--dry', action='store_true', default=False, help='print parameter count and exit')
     group.add_argument('--eval', action='store_true', default=False, help='evaluate on the validation set and exit')
     group.add_argument('--resume', action='store_true', default=False, help='resume training from checkpoint')
+    group.add_argument("--resume-from", type=str, help="Path to a checkpoint to resume training from")
 
     group.add_argument("--loss-fct", type=str, help="Loss function, cross entropy by default")
 
@@ -73,13 +71,11 @@ def add_eval_arguments(parser):
 def add_embed_arguments(parser):
     group = parser.add_argument_group("Embedder Arguments", "Only applicable if using a decoder-only model or --merged-vocab.")
     group.add_argument("--d_ap", type=int, default=0)
-    group.add_argument("--ap_embed", type=str, default="randn")
     group.add_argument("--embed-base-normalization", type=str, default="l2")
     group.add_argument("--embed-ap-normalization", type=str, default="l2")
     group.add_argument("--embed-final-normalization", type=str, default="l2")
     group.add_argument("--feature-normalization", type=str, default="disabled", help="Normalization before the projection matrix")
     group.add_argument("--embed-scaling", type=str)
-    group.add_argument("--shuffle-aps", type=int)
 
 
 def add_ted_arguments(parser):
@@ -96,6 +92,11 @@ def add_ted_arguments(parser):
     group.add_argument("--dec-pe", type=str, default='sinusoid', help="Decoder's positional embedding type")
     group.add_argument('--no-pe-cross-keys', action='store_true', default=False, help="When RoPE is enabled, don't use RoPE for cross-attention keys")
     group.add_argument('--tree-pos-enc', action='store_true', default=False, help='use tree positional encoding')
+    group.add_argument('--cross-attn', type=str, default="", help="Cross attention configuration: supports 'per', 'agg', 'per-agg', 'agg-per', or ''")
+    group.add_argument('--no-enc-agg', action='store_true', default=False, help='Disable aggregation attention in encoder')
+    group.add_argument('--no-dec-agg', action='store_true', default=False, help='Disable aggregation attention in decoder')
+    group.add_argument('--no-enc-per', action='store_true', default=False, help='Disable per-stream self-attention in encoder')
+    group.add_argument('--no-dec-per', action='store_true', default=False, help='Disable per-stream self-attention in decoder')
     add_embed_arguments(parser)
 
 def add_ted_gen_arguments(parser):
@@ -103,7 +104,7 @@ def add_ted_gen_arguments(parser):
     # Beam search
     group.add_argument('--alpha', type=float, default=1.0)
     group.add_argument('--beam-size', type=int, default=1)
-    group.add_argument("--gen-batch-size", type=int, default=512)
+    group.add_argument("--gen-batch-size", type=int, default=64)
 
 
 def apply_seed(seed):
@@ -173,7 +174,7 @@ if __name__ == "__main__":
 
     if action == "train":
         from autoregltl.train import train
-        train(create_model=create_model, trainer_cls=trainer_cls, args=args)
+        train(load_model=load_model, create_model=create_model, trainer_cls=trainer_cls, args=args)
     elif action == "eval":
         from autoregltl.eval import evaluate
         evaluate(load_model=load_model, get_gen_args=get_gen_args, args=args)

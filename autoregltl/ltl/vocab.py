@@ -108,10 +108,6 @@ class MergedLTLVocab():
     consts: list = field(default_factory=lambda: ['0', '1'])
     trace_ops: list = field(default_factory=lambda: ['&', '|', '!'])
     ltl_ops: list = field(default_factory=lambda: ['U', 'X', '!', '&', '|'])
-    merge_tokens: Optional[str] = None
-    # Each ap_i in the input will be converted to #other_tokens + i
-    # aps field will be ignored
-    dynamic_aps: bool = False
     use_start_token: bool = False
     use_pad_token: bool = False
     use_eos_token: bool = True
@@ -128,35 +124,21 @@ class MergedLTLVocab():
                 setattr(self, f'{x}_id', None)
         self.special_token_count = len(self.token_list)
 
-        aps = [] if self.dynamic_aps else self.aps
+        ltl_ops = self.ltl_ops
+        trace_ops = self.trace_ops + [';', '{', '}']
+        # Determine common and unique ops
+        common_ops = [x for x in ltl_ops if x in trace_ops]
+        ltl_ops = [x for x in ltl_ops if x not in common_ops]
+        trace_ops = [x for x in trace_ops if x not in common_ops]
+        # Add to token list
+        common = self._add_tokens(self.consts + common_ops)
+        self.trace_tokens = common | self._add_tokens(trace_ops)
+        self.ltl_tokens = common | self._add_tokens(ltl_ops)
 
-        if self.merge_tokens is None:
-            # LTL first because it's the output
-            self.trace_tokens = self._add_tokens(aps + self.consts + self.trace_ops + [';', '{', '}'])
-            self.ltl_tokens = self._add_tokens(aps + self.consts + self.ltl_ops)
-        elif self.merge_tokens == "aps":
-            common = self._add_tokens(aps + self.consts)
-            self.trace_tokens = common | self._add_tokens(self.trace_ops + [';', '{', '}'])
-            self.ltl_tokens = common | self._add_tokens(self.ltl_ops)
-        elif self.merge_tokens == "all":
-            ltl_ops = self.ltl_ops
-            trace_ops = self.trace_ops + [';', '{', '}']
-            # Determine common and unique ops
-            common_ops = [x for x in ltl_ops if x in trace_ops]
-            ltl_ops = [x for x in ltl_ops if x not in common_ops]
-            trace_ops = [x for x in trace_ops if x not in common_ops]
-            # Add to token list
-            common = self._add_tokens(aps + self.consts + common_ops)
-            self.trace_tokens = common | self._add_tokens(trace_ops)
-            self.ltl_tokens = common | self._add_tokens(ltl_ops)
-        else:
-            raise ValueError(f"Unsupported merge_tokens value: {self.merge_tokens}")
-        
-        if self.dynamic_aps:
-            # Add all lowercase alphabet characters
-            aps = self._add_tokens([chr(i) for i in range(ord('a'), ord('z')+1)])
-            self.ltl_tokens |= aps
-            self.trace_tokens |= aps
+        # Add all lowercase alphabet characters
+        aps = self._add_tokens([chr(i) for i in range(ord('a'), ord('z')+1)])
+        self.ltl_tokens |= aps
+        self.trace_tokens |= aps
     
     def _add_tokens(self, tokens):
         start_id = len(self.token_list)
@@ -165,10 +147,9 @@ class MergedLTLVocab():
     
     def are_inputs_compatible(self, other):
         """
-        SIDE EFFECT: Modifies aps on self if dynamic_aps.
+        SIDE EFFECT: Modifies aps on self.
         """
-        if self.dynamic_aps:
-            self.aps = other.aps
+        self.aps = other.aps
         return set(other.aps).issubset(set(self.aps)) \
             and set(other.consts).issubset(set(self.consts)) \
             and set(other.trace_ops).issubset(set(self.trace_ops))
@@ -212,9 +193,7 @@ class MergedLTLVocab():
         return len(self.token_list)
 
     def num_classes(self):
-        if self.dynamic_aps:
-            return len(self.token_list) - 26 + len(self.aps)
-        return len(self.token_list)
+        return len(self.token_list) - 26 + len(self.aps)
 
     def ltl_size(self):
         return len(self.ltl_tokens) + self.special_token_count

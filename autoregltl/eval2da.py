@@ -50,7 +50,7 @@ def eval2d(
         gen_args = dict(
             alpha=1.0,
             beam_size=3,
-            gen_batch_size=512,
+            gen_batch_size=128,
         )
     save_loc = os.path.join(model_path, output)
     model = ted.load_model(model_path, device)
@@ -64,9 +64,6 @@ def eval2d(
     min_length = min([i[1] for i in dsdict.keys()])
     max_length = max([i[1] for i in dsdict.keys()])
     
-    if not model.config.vocab.dynamic_aps:
-        max_aps = min(len(model.config.vocab.aps), max_aps)
-
     datasets = {}
     all_pairs = []
     for ap in range(min_aps, max_aps+1):
@@ -81,30 +78,18 @@ def eval2d(
         datasets[ap] = (test_dataset, sizes)
 
     print("All pairs:", len(all_pairs))
-    all_dataset = dataset.EncDecLTLDataset(
-        filename=None,
-        vocab=model.config.vocab,
-        max_formula_length=None,
-        max_trace_length=None,
-        tree_pos_enc=model.config.tree_pos_enc,
-        pairs=all_pairs,
-    )
-
     filedict = {}
-    if model.config.vocab.dynamic_aps:
-        model.config.vocab.aps = CHARS[:max_aps]
-        median_w_out = model.set_median_w(all_dataset, repeat_count=repeat_count)
-        filedict |= median_w_out
-    elif (merged_embedder := getattr(model, "merged_embedder", None)):
+
+    model.config.vocab.aps = CHARS[:max_aps]
+    if (merged_embedder := getattr(model, "merged_embedder", None)):
         merged_embedder.prepare()
 
     correct_matrix = torch.zeros(max_aps + 1, max_length)
     count_matrix = torch.zeros(max_aps + 1, max_length)
     all_results = {}
     for apcount in tqdm(list(range(min_aps, max_aps+1))[::-1], desc="APs"):
-        if model.config.vocab.dynamic_aps:
-            model.config.vocab.aps = CHARS[:apcount]
-            model.merged_embedder.shrink_w()
+        model.config.vocab.aps = CHARS[:apcount]
+        model.merged_embedder.shrink_w()
 
         test_dataset, sizes = datasets[apcount]
         cum_preds = model.generate_predictions(
@@ -176,6 +161,8 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=42, help='Seed for the random number generator')
     parser.add_argument('--input', type=str, default="data/eval2d-10ap.pkl")
     parser.add_argument('--output', type=str, default="eval2da1.pkl")
+    parser.add_argument('--batch-size', type=int, default=128, help='Batch size for generation')
+    parser.add_argument('--beam-size', type=int, default=3, help='Beam size for generation')
     args = parser.parse_args()
 
     seed = args.seed
@@ -193,6 +180,11 @@ if __name__ == '__main__':
                 figsize=eval(args.figsize),
                 eval_ds=args.input,
                 output=args.output,
+                gen_args=dict(
+                    alpha=1.0,
+                    beam_size=args.beam_size,
+                    gen_batch_size=args.batch_size,
+                ),
             )
         except Exception as e:
             print("Error:")

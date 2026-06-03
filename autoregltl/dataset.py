@@ -240,18 +240,10 @@ def get_dataset_vocab(args, config=None):
         elif args.vocab_aps > len(aps):
             aps = [chr(i) for i in range(ord('a'), ord('z')+1)][:args.vocab_aps]
 
-    if getattr(args, 'merged_vocab', False) or getattr(config, 'merged_embedder', None) is not None:
-        merge_tokens = args.merge_tokens if config is None else config.vocab.merge_tokens
-        dynamic_aps = args.dynamic_aps if config is None else config.vocab.dynamic_aps
-        kwargs = {} if args.decoder_only else {"use_start_token": True, "use_pad_token": True}
-        vocab = MergedLTLVocab(aps=aps, merge_tokens=merge_tokens, dynamic_aps=dynamic_aps, **kwargs)
-        print(f"[get_dataset_vocab] Vocab size: {vocab.size()} (merged tokens: {merge_tokens})")
-        return vocab
-    else:
-        # encoder-decoder
-        vocab = EncDecVocab.create_ltl_vocab(aps=aps)
-        print(f"[get_dataset_vocab] Input vocab size: {vocab.inp.size()}, output vocab size: {vocab.out.size()}")
-        return vocab
+    kwargs = {} if args.decoder_only else {"use_start_token": True, "use_pad_token": True}
+    vocab = MergedLTLVocab(aps=aps, **kwargs)
+    print(f"[get_dataset_vocab] Vocab size: {vocab.size()} (merged tokens)")
+    return vocab
 
 
 def get_dataset(args, split, dataset_class, **kwargs):

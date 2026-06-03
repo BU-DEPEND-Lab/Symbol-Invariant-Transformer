@@ -118,8 +118,8 @@ def save_command(args, param_count):
         f.write("\n")
 
 
-def train(args, create_model, trainer_cls):
-    if glob(os.path.join(args.model_path, "*")) and not args.resume:
+def train(args, create_model, load_model, trainer_cls):
+    if glob(os.path.join(args.model_path, "*")) and not args.resume and not args.eval:
         sys.exit("Model directory is not empty. Please specify a different output directory or use --resume to continue training.")
     elif args.resume and not glob(os.path.join(args.model_path, "checkpoint-*")):
         sys.exit("No checpoints found in the specified model directory. Please check the directory or start a new training run.")
@@ -127,7 +127,15 @@ def train(args, create_model, trainer_cls):
 
     vocab = dataset.get_dataset_vocab(args)
 
-    model = create_model(args, vocab)
+    if args.eval:
+        model = load_model(args.model_path, torch.device(args.device))
+        print(f"Loaded model from {args.model_path} for evaluation.")
+    elif args.resume_from:
+        model = load_model(args.resume_from, torch.device(args.device))
+        print(f"Resumed model from {args.resume_from}")
+    else:
+        model = create_model(args, vocab)
+        print("Created a new model.")
     param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Number of parameters: {param_count:_}")
 
@@ -172,6 +180,7 @@ def train(args, create_model, trainer_cls):
             # Epoch
             num_train_epochs=args.epochs,
             per_device_train_batch_size=args.batch_size,
+            per_device_eval_batch_size=args.eval_batch_size,
             gradient_accumulation_steps=args.grad_acc_steps,
             # Seeding
             seed=args.seed if args.seed is not None else 42,  # 42 is the default anyway
