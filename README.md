@@ -87,3 +87,11 @@ python -m autoregltl.eval2da "$MODEL_PATH"
 
 There are various scripts in the `utils` and `notebooks` folders for creating perturbed datasets, figures, etc.
 
+### Model Conversion & Fine-tuning
+
+See [model-conversion.ipynb](./notebooks/model-conversion.ipynb) to convert a vanilla pre-trained baseline model into a symbol-invariant transformer.
+
+**NOTE:** You will need to remove `shuffle_aps` key manually from the converted model's config.
+
+After conversion, use one of the fine-tuning scripts in `./slurm` folder.
+
