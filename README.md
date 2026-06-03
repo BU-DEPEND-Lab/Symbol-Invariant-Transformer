@@ -40,8 +40,8 @@ export CUBLAS_WORKSPACE_CONFIG=:4096:8
 ### Training
 
 ```sh
-# LTL Generalization Model
-python -m autoregltl.main --model-path=models/ltl-sit --seed=46 train-ted --ds-name=ltl-35-supp --epochs=50 --val-max-samples=1000 --d-embed-enc=64 --num-heads=4 --d-ff=1024 --num-layers=8 --tree-pos-enc --dec-pe=rope --feature-normalization=l2 --loss-fct=adacos --cross-attn=per --no-dec-agg --batch-size=256 --grad-acc-steps=3 --eval-batch-size=256
+# Propositional Logic Generalization Model
+python -m autoregltl.main --model-path=models/prop-sit --seed=43 train-ted --epochs=64 --val-max-samples=1000 --d-embed-enc=96 --num-heads=6 --d-ff=768 --num-layers=6 --tree-pos-enc --dec-pe=rope --embed-scaling=sqrtd --feature-normalization=l2 --loss-fct=adacos --cross-attn=per --batch-size=256 --grad-acc-steps=4 --eval-batch-size=256
 ```
 See [autoregltl/main.py](./autoregltl/main.py) for more command line arguments.
 The [slurm](./slurm) folder contains helper scripts for training.
