@@ -1,6 +1,8 @@
-# Interchangeable Token Embeddings
+# Symbol-Invariant Transformer
 
-Repository for our ICML 2025 paper, [Interchangeable Token Embeddings for Extendable Vocabulary and Alpha-Equivalence](https://arxiv.org/abs/2410.17161).
+Repository for our ICML 2026 paper, [Names Don't Matter: Symbol-Invariant Transformer for Open-Vocabulary Learning](https://arxiv.org/abs/2601.23169).
+
+**Baselines:** To run the baselines, either switch to one of the baseline branches in this repository or use the [code repository of previous work](https://github.com/necrashter/interchangeable-token-embeddings).
 
 ## Requirements
 
@@ -15,16 +17,15 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvi
 pip install -r requirements.txt
 ```
 
-The master branch contains the LTL (linear temporal logic) task.
-Switch to `prop-task` or `copy-task` branches for the propositional logic and copying with extensible vocabulary tasks, respectively.
+The main branch contains the LTL (linear temporal logic) task. For other tasks, see other branches.
 Note that the dataset names remain consistent between LTL and propositional logic tasks, e.g., the default prop. logic dataset is called `ltl-35`, its 10 AP variant is `ltl-35-10ap`, etc.
 To differentiate the datasets, in LTL, the datasets under `data` folder is used, whereas in prop. logic, `data-prop` folder is used.
 
 ## Datasets & Models
 
 You can get the datasets and the trained models from HuggingFace:
-* [Datasets](https://huggingface.co/datasets/necrashter/interchangeable-token-embeddings-datasets)
-* [Models](https://huggingface.co/necrashter/interchangeable-token-embeddings)
+* [Datasets from previous work](https://huggingface.co/datasets/necrashter/interchangeable-token-embeddings-datasets)
+* [Models from previous work](https://huggingface.co/necrashter/interchangeable-token-embeddings)
 
 ## Usage
 
