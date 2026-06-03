@@ -18,10 +18,13 @@ pip install -r requirements.txt
 ```
 
 The main branch contains the LTL (linear temporal logic) task. For other tasks, see other branches.
+
+## Datasets & Models
+
 Note that the dataset names remain consistent between LTL and propositional logic tasks, e.g., the default prop. logic dataset is called `ltl-35`, its 10 AP variant is `ltl-35-10ap`, etc.
 To differentiate the datasets, in LTL, the datasets under `data` folder is used, whereas in prop. logic, `data-prop` folder is used.
 
-## Datasets & Models
+**Updated LTL dataset:** `ltl-35-supp` represents the supplemented version of the `ltl-35` dataset, addressing the data imbalance issue in the LTL task. There's no `ltl-35-supp` dataset for the propositional logic task since it didn't have this issue.
 
 You can get the datasets and the trained models from HuggingFace:
 * [Datasets from previous work](https://huggingface.co/datasets/necrashter/interchangeable-token-embeddings-datasets)
@@ -37,14 +40,11 @@ export CUBLAS_WORKSPACE_CONFIG=:4096:8
 ### Training
 
 ```sh
-# LTL Generalization Models
-python3 -m autoregltl.main --model-path=models/ltl-generalization/proposed --seed=42 train-ted --ds-name=ltl-35-perturbed --num-heads=8 --d-embed-enc=128 --d-ff=1024 --num-layers=8 --batch-size=768 --epochs=50 --val-max-samples=10000 --merge-tokens=all --merged-vocab --embed-scaling=sqrtd --dynamic-aps --d_ap=5 --ap_embed=diagbor --feature-normalization=l2 --loss-fct=adacos --tree-pos-enc --dec-pe=rope
-python3 -m autoregltl.main --model-path=models/ltl-generalization/baseline train-ted --ds-name=ltl-35 --num-heads=8 --d-embed-enc=128 --d-ff=1024 --num-layers=8 --batch-size=768 --epochs=50 --val-max-samples=10000 --merge-tokens=all --merged-vocab --embed-scaling=sqrtd --feature-normalization=l2 --loss-fct=adacos --tree-pos-enc --dec-pe=rope
-python3 -m autoregltl.main --model-path=models/ltl-generalization/full-vocab train-ted --ds-name=ltl-35-10ap --num-heads=8 --d-embed-enc=128 --d-ff=1024 --num-layers=8 --batch-size=768 --epochs=50 --val-max-samples=10000 --merge-tokens=all --merged-vocab --embed-scaling=sqrtd --feature-normalization=l2 --loss-fct=adacos --tree-pos-enc --dec-pe=rope
-python3 -m autoregltl.main --model-path=models/ltl-generalization/alpha-renaming --seed=46 train-ted --num-heads=8 --d-embed-enc=128 --d-ff=1024 --num-layers=8 --batch-size=768 --epochs=50 --val-max-samples=10000 --merge-tokens=all --merged-vocab --embed-scaling=sqrtd --tree-pos-enc --ds-name=ltl-35-perturbed --dynamic-aps --shuffle-aps=010 --dec-pe=rope --embed-base-normalization=l2 --embed-ap-normalization=l2 --embed-final-normalization=l2 --feature-normalization=l2 --loss-fct=adacos
+# LTL Generalization Model
+python -m autoregltl.main --model-path=models/ltl-sit --seed=46 train-ted --ds-name=ltl-35-supp --epochs=50 --val-max-samples=1000 --d-embed-enc=64 --num-heads=4 --d-ff=1024 --num-layers=8 --tree-pos-enc --dec-pe=rope --feature-normalization=l2 --loss-fct=adacos --cross-attn=per --no-dec-agg --batch-size=256 --grad-acc-steps=3 --eval-batch-size=256
 ```
 See [autoregltl/main.py](./autoregltl/main.py) for more command line arguments.
-The [slurm](./slurm) folder contains helper scripts for training. The `train.sh` script for each task submits a new job using `train.slurm`.
+The [slurm](./slurm) folder contains helper scripts for training.
 You can learn more about training commands by inspecting these files.
 
 Note that you are not expected to get the same results if your hardware or package versions are different.
