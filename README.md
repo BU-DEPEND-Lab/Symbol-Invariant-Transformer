@@ -27,8 +27,8 @@ To differentiate the datasets, in LTL, the datasets under `data` folder is used,
 **Updated LTL dataset:** `ltl-35-supp` represents the supplemented version of the `ltl-35` dataset, addressing the data imbalance issue in the LTL task. There's no `ltl-35-supp` dataset for the propositional logic task since it didn't have this issue.
 
 You can get the datasets and the trained models from HuggingFace:
-* [Datasets from previous work](https://huggingface.co/datasets/necrashter/interchangeable-token-embeddings-datasets)
-* [Models from previous work](https://huggingface.co/necrashter/interchangeable-token-embeddings)
+* [Datasets](https://huggingface.co/datasets/necrashter/interchangeable-token-embeddings-datasets)
+* [Models](https://huggingface.co/necrashter/symbol-invariant-transformer)
 
 ## Usage
 
