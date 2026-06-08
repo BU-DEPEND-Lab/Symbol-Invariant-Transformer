@@ -102,8 +102,8 @@
                 underlying meaning. The root cause lies in standard embedding tables, which assign an independently
                 learned representation to each token, baking name-dependent biases directly into
                 the model. This issue cannot be patched away with more data or better prompts. it requires
-                a new architecture that is <b>invariant to symbol renaming by construction</b>, which also allows models to
-                reliably generalize to novel symbols that were never seen during training.
+                a novel architecture that is <b>invariant to symbol renaming by construction</b>, which also allows models to
+                reliably <b>generalize to new symbols</b> that were never seen during training.
             </p>
         </div>
     </div>
@@ -111,6 +111,68 @@
         <source src="./static/media/natural_language_renaming.webm" type="video/webm">
         Your browser does not support the video tag.
     </video>
+</div>
+
+<div class="vidcolu">
+    <h2 class="title is-3">Proposed Method</h2>
+    <video controls autoplay loop>
+        <source src="./static/media/method.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <p class="viddesc">
+        Our method maintains <i>parallel embedding streams</i>, one per interchangeable token, each treating its own
+        token of interest as an actual symbol while masking every other interchangeable token as a placeholder.
+    </p>
+</div>
+
+<div class="colu content">
+    <h3>Details</h3>
+    <p>
+    <ul>
+        <li><b>Per-stream self-attention</b> builds independent context.</li>
+        <li><b>Aggregated attention</b> fuses the streams into a shared view.</li>
+        <li>All weights are <b>shared across streams</b>, enabling post-training vocabulary extension.</li>
+        <li><b>Provably invariant to symbol renaming</b> by construction.</li>
+    </ul>
+    Please see the full paper for more details.
+    </p>
+</div>
+
+<div class="shadow">
+    <div class="colu content">
+        <h2 class="title is-3">Experiments</h2>
+        The experimental results on both propositional logic and linear temporal logic (LTL) tasks show that the proposed method...
+        <ul>
+         <li><b>Outperforms</b> all baselines under various <b>dataset perturbations</b>, such as renaming bias and reduced training dataset.</li>
+           <li>Exhibits state-of-the-art performance on out-of-distribution <b>vocabulary and length generalization.</b></li>
+           <li>Is empirically invariant to variable renaming, confirming its theory.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="vidcolu">
+    <h2 class="title is-3">Main Experimental Results</h2>
+    <img src="./static/media/prop-heatmap.svg" alt="Propositional Logic Heatmap">
+    <p class="mindesc">(a) Propositional Logic</p>
+    <img src="./static/media/ltl-heatmap.svg" alt="LTL Heatmap">
+    <p class="mindesc">(b) LTL (Linear Temporal Logic)</p>
+    <p class="viddesc">
+        Heatmaps visualizing prediction accuracy across varying atomic-proposition (variable) counts and formula lengths on
+        an out-of-distribution test set.
+        Brightness reflects sample density, with full brightness representing 100 samples, and the dashed white box
+        marks the boundary of the training distribution.
+        <!--The proposed method markedly outperforms all baselines on propositional logic, where relational reasoning between symbols is the dominant challenge, while remaining competitive with other methods on LTL, where temporal reasoning is the primary bottleneck.-->
+    </p>
+</div>
+
+<div class="colu content">
+    <h3>Other Findings</h3>
+    <p>
+    <ul>
+        <li>It <b>outperforms GPT-5.2</b> on LTL by a wide margin and matches its propositional-logic accuracy at top-10/top-25 predictions, all while running orders of magnitude faster.</li>
+        <li>Existing pre-trained transformers can be <b>retrofitted</b> with our mechanism through a simple model conversion procedure, recovering competitive performance after a few epochs of fine-tuning.</li>
+    </ul>
+    </p>
 </div>
 
 <footer>
