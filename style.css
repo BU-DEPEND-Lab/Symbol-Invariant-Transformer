@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   /* Scales beautifully if the user changes their browser settings */
   font-size: 1.125rem; 
