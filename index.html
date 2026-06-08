@@ -86,17 +86,31 @@
 </div>
 
 <div class="vidcolu">
-    <h2 class="title is-3">Alpha-Equivalence</h2>
-    <!-- TODO: replace with video source -->
-    <video controls autoplay loop>
-        <source src="./static/media/alphaeq.mp4" type="video/mp4">
+    <h2 class="title is-3">Variable Renaming Problem</h2>
+    <div class="columns is-vcentered">
+        <div class="column is-half">
+            <video autoplay loop muted>
+                <source src="./static/media/variable_renaming.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <div class="column is-half">
+            <p>
+                Neural networks are surprisingly fragile to how symbols are named: recent studies show that large
+                language models' coding performance can drop by up to 70% under simple semantics-preserving edits
+                such as variable renaming, revealing a reliance on surface-level naming patterns rather than
+                underlying meaning. The root cause lies in standard embedding tables, which assign an independently
+                learned representation to each token, baking name-dependent biases directly into
+                the model. This issue cannot be patched away with more data or better prompts. it requires
+                a new architecture that is <b>invariant to symbol renaming by construction</b>, which also allows models to
+                reliably generalize to novel symbols that were never seen during training.
+            </p>
+        </div>
+    </div>
+    <video autoplay loop muted>
+        <source src="./static/media/natural_language_renaming.webm" type="video/webm">
         Your browser does not support the video tag.
     </video>
-    <p class="viddesc">
-        In many formal languages, variables can be renamed without changing the meaning — a property known as
-        <i>alpha-equivalence</i>. Our method is <b>provably invariant</b> to such renamings, enabling generalization
-        to larger symbol vocabularies at test time without any retraining.
-    </p>
 </div>
 
 <footer>
